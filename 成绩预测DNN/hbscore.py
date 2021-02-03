@@ -112,11 +112,12 @@ def bp(l1, l2, l3, w0, w1, w2, y):
 
 
 if __name__ == "__main__":
-    #数据处理
-    wb = openpyxl.load_workbook('19级学生成绩统计 - 副本.xlsx')
-    ws1 = wb["sheet1"]
+    # 数据处理
+    # 注意此处修改为自己的数据
+    wb = openpyxl.load_workbook('成绩.xlsx')
+    ws1 = wb["表1"]
     allList=getHang(inputList,ws1)
     otherList,aimList = getDetailScore(allList, ws1, inputList[0])
-    #机器学习
+    # 机器学习
     rr=learn(otherList, aimList, saveUrl)
     test(rr)
