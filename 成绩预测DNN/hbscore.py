@@ -28,29 +28,39 @@ getDetailScore函数 输入 姓名:行号 的字典 和 excel表 和 目标人�
 def getDetailScore(allList, ws, aim):
     aimList = []  # 目标矩阵
     otherList = []  # 其他矩阵
-    aimId = allList.pop(aim)
+    aimRow = allList.pop(aim)
     for i in range(6, 65):  # 处理其他矩阵
         oneLessonList = []
         for j in allList.values():
             oneLessonScore = ws.cell(row=j, column=i).value
             # 数据清洗
-            if oneLessonScore is None:
-                break
-            elif oneLessonScore.isdigit():
+            if isReasonable(oneLessonScore):
                 oneLessonList.append(float(oneLessonScore) / 100)
+            else:
+                break
+        # 处理目标矩阵并添加数据到最终列表中
         if len(oneLessonList) == 3:
-            otherList.append(oneLessonList)
-        else:
-            continue
-        # 处理目标矩阵
-        oneLessonScore = ws.cell(row=aimId, column=i).value
-        if oneLessonScore is None:
-            pass
-        elif oneLessonScore.isdigit():
-            aimList.append(float(oneLessonScore) / 100)
+            oneLessonScore = ws.cell(row=aimRow, column=i).value
+            if isReasonable(oneLessonScore):
+                aimList.append(float(oneLessonScore) / 100)
+                otherList.append(oneLessonList)
+
     otherList = array(otherList)
     aimList = array([aimList]).T
     return otherList, aimList
+
+
+'''
+isReasonable函数 输入excel单元格数据 判断是否合理
+合理时 返回 Ture 不合理时 返回 False
+'''
+
+
+def isReasonable(score):
+    if score is not None and score != "" and score.isdigit():
+        return True
+    else:
+        return False
 
 
 '''
@@ -73,7 +83,6 @@ def learn(x, y, saveUrl):
         w2 = w2 + dot(l2.T, l2_delta)
         w1 = w1 + dot(l1.T, l1_delta)
         w0 = w0 + dot(l0.T, l0_delta)
-    print(saveUrl)
     if saveUrl:
         savez(saveUrl, w0=w0, w1=w1, w2=w2)
     return w0, w1, w2
@@ -96,12 +105,12 @@ def loadWeights(saveUrl):
 
 
 '''
-test函数 输入 w0,w1,w2元组 和 全局变量testList
+train函数 输入 w0,w1,w2元组 和 全局变量testList
 打印 概率 无返回值
 '''
 
 
-def test(weights):
+def train(weights):
     ans = fp(testList, *weights)[2]
     print(f"预测成绩为{int(ans[0] * 100)}")
 
@@ -131,10 +140,10 @@ def bp(l1, l2, l3, w0, w1, w2, y):
 
 if __name__ == "__main__":
     # 注意此处修改为自己的数据
-    wb = openpyxl.load_workbook('成绩.xlsx')
-    ws1 = wb["表1"]
+    wb = openpyxl.load_workbook('myexcel.xlsx')
+    ws1 = wb["sheet1"]
     allList = getHang(inputList, ws1)
     otherList, aimList = getDetailScore(allList, ws1, inputList[0])
     testWeights = learn(otherList, aimList, saveUrl)
     # rr=loadWeights(saveUrl)
-    test(testWeights)
+    train(testWeights)
