@@ -3,7 +3,7 @@ import openpyxl
 from numpy import random, dot, exp, array, savez, load
 
 
-class hbscore:
+class Hbscore:
     def __init__(self, saveUrl="", nameList=[], testList=[]):
         if len(testList) == 3:
             for i in range(0,3):
@@ -134,7 +134,7 @@ class hbscore:
             raise Exception("读取权重文件时出错")
 
 if __name__ == "__main__":
-    myhbscore = hbscore(saveUrl="./weights.npz", nameList=["zh", "gg", "zh", "sz"], testList=[])
+    myhbscore = Hbscore(saveUrl="./weights.npz", nameList=["zh", "gg", "zh", "sz"], testList=[])
     mysetting = {"excelName": "myexcel.xlsx", "sheetName": "sheet1"}
     myhbscore.excelToArr(mysetting)
     myhbscore.learn()
