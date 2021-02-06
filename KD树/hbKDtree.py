@@ -16,6 +16,7 @@ class Tree:
     def __init__(self):
         self.data = []
         self.head = False
+        self.far = 999
     
     def sortX(self,inputList):
         return inputList[0]
@@ -28,7 +29,7 @@ class Tree:
         
     def createNode(self,data,deep):
         if len(data)>=3:# 有两个子节点
-            mid = len(data)//2# 如遇偶数，选较大的那个为当前节点
+            mid = len(data)//2# 如遇偶数，选较小的那个为当前节点
             if deep%2 == 1:# 奇数层对X进行排序
                 data.sort(key = self.sortX) 
             else:# 偶数层对Y进行排序
@@ -67,29 +68,31 @@ class Tree:
         return node
     
     def knn(self,aimX,aimY,size):
-        S = size * [[999,0,0]]
+        S = [[999,0,0] for i in range(3)]
         self.search(self.head, aimX, aimY, S)
         return tuple(S)
         
     def search(self,node,aimX,aimY,S):
+
+        
         if(node.childNum == 2):# 有2个子节点
             if(node.deep%2 == 1):# 奇数层
                 if(aimX<=node.x):# 小于等于支节点
                     self.search(node.left, aimX, aimY, S)
-                    if(pow(aimX,2)+pow(aimY,2) < pow(abs(aimX-node.x),2)):
+                    if(self.far < pow(abs(aimX-node.x),2)):
                         self.search(node.right, aimX, aimY, S)
                 else:
                     self.search(node.right, aimX, aimY, S)
-                    if(pow(aimX,2)+pow(aimY,2) < pow(abs(aimX-node.x),2)):
+                    if(self.far < pow(abs(aimX-node.x),2)):
                         self.search(node.left, aimX, aimY, S)
             else:# 偶数层
                 if(aimY<=node.y):# 小于等于支节点
                     self.search(node.left, aimX, aimY, S)
-                    if(pow(aimX,2)+pow(aimY,2) < pow(abs(aimY-node.y),2)):
+                    if(self.far < pow(abs(aimY-node.y),2)):
                         self.search(node.right, aimX, aimY, S)
                 else:
                     self.search(node.right, aimX, aimY, S)
-                    if(pow(aimX,2)+pow(aimY,2) < pow(abs(aimY-node.y),2)):
+                    if(self.far < pow(abs(aimY-node.y),2)):
                         self.search(node.left, aimX, aimY, S)
             self.compare(node, aimX, aimY, S)
             
@@ -101,24 +104,28 @@ class Tree:
             self.compare(node, aimX, aimY, S)
                    
     def compare(self,node,aimX,aimY,S):
-        distance = abs(node.x+node.y-aimX-aimY)
-        for i in range(0,len(S)):
-            if distance < S[i][0]:
-                S[i][0] = distance
-                S[i][1] = node.x
-                S[i][2] = node.y
-                break
+        distance = abs(node.x-aimX)+abs(node.y-aimY)
+        biggest = 0
+        print(distance)
+        for i in range(1,len(S)):
+            if S[biggest][0] < S[i][0]:
+                biggest = i
+        if distance < S[biggest][0]:
+            S[biggest][0] = distance
+            S[biggest][1] = node.x
+            S[biggest][2] = node.y
+            self.far = pow(node.x-aimX,2)+pow(node.y-aimY,2)
             
             
         
 if __name__ == "__main__":
     start = time.time()
-    items = [[1,3],[4,6],[2,5],[8,4],[1,2],[1,4]]
+    items = [[6,5],[1,-3],[-6,-5],[-4,-10],[-2,-1],[-5,12],[2,13],[17,-12],[8,-22],[15,-13],[10,-6],[7,15],[14,1]]
     tree = Tree()
     tree.data = items
     tree.create()
-    ans = tree.knn(1, 5, 1)
+    ans = tree.knn(-1, -5, 3)
     useTime = time.time()-start
-    print(f"用时{useTime*1000}秒")
+    print("用时{:.2f}毫秒".format(useTime*1000))
     
     
