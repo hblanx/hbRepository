@@ -27,6 +27,9 @@ compare()方法，比较距离
 add()方法，增加节点，注意，此方法会导致熵减速度下降！此方法为接口
 rebuild()方法，在增加节点时重建含有一个子节点的分支节点
 addNode()方法，递归增加节点
+remove()方法，删除节点，注意，此方法会导致熵减速度下降！此方法为接口
+removeNode()方法，实现删除功能
+searchRemoveNode()方法，寻找需要删除的节点
 '''
 class Tree:
     def __init__(self):
@@ -39,6 +42,7 @@ class Tree:
 
     def sortY(self, inputList):
         return inputList[1]
+
     '''
     create方法，使用Tree类的data成员变量构造树
     生成成员变量head 无返回值
@@ -115,13 +119,15 @@ class Tree:
             node.left = newNode
             node.childNum = 1
             return node
+
     '''
     add方法，输入新增物体的x值、y值
     无返回值
     '''
     def add(self, aimX, aimY):
         self.head = self.addNode(self.head, aimX, aimY)
-        self.data.append([aimX,aimY])
+        self.data.append([aimX, aimY])
+
     '''
     knn方法，输入目标物体的x值、y值，搜索的最近目标数量
     返回目标信息元组，信息包含距离、x值、y值
@@ -173,14 +179,70 @@ class Tree:
             S[biggest][2] = node.y
             self.far = pow(node.x - aimX, 2) + pow(node.y - aimY, 2)
 
+    '''
+    输入需要删除的节点的具体坐标，x值、y值 无返回值
+    '''
+    def remove(self, aimX, aimY):
+        self.head = self.searchRemoveNode(self.head, aimX, aimY)
+
+    def searchRemoveNode(self, node, aimX, aimY):
+        if node.x == aimX and node.y == aimY:
+            node = self.removeNode(node)
+            return node
+        if (node.childNum == 2):  # 有2个子节点
+            if (node.deep % 2 == 1):  # 奇数层
+                if (aimX <= node.x):  # 小于等于支节点
+                    node.left = self.searchRemoveNode(node.left, aimX, aimY)
+                else:
+                    node.right = self.searchRemoveNode(node.right, aimX, aimY)
+            else:  # 偶数层
+                if (aimY <= node.y):
+                    node.left = self.searchRemoveNode(node.left, aimX, aimY)
+                else:
+                    node.right = self.searchRemoveNode(node.right, aimX, aimY)
+        elif (node.childNum == 1):  # 有1个子节点
+            node.left = self.searchRemoveNode(node.left, aimX, aimY)
+            if not node.left:  # 如果left不存在了
+                node.childNum = 0
+        return node
+
+    def removeNode(self, node):
+        if (node.childNum == 2):  # 有2个子节点
+            if node.right:  # 右节点存在
+                leftNode = node.left
+                node = self.removeNode(node.right)
+                node.deep -= 1
+                if (node.deep % 2 == 1):  # 奇数层
+                    if (leftNode.x < node.left.x):
+                        node.left, node.right = leftNode, node.left
+                    else:
+                        node.left, node.right = node.left
+                else:
+                    if (leftNode.y < node.left.y):
+                        node.left, node.right = leftNode, node.left
+                    else:
+                        node.left, node.right = node.left
+
+            return node
+        elif (node.childNum == 1):  # 只有1个子节点
+            node = node.left
+            node.deep -= 1
+            return node
+
+        else:  # 叶子节点
+            return False
+
 
 if __name__ == "__main__":
-    items = [[6, 5], [1, -3], [-6, -5], [-4, -10], [-2, -1], [-5, 12], [2, 13], [17, -12], [8, -22], [15, -13],
-             [10, -6], [7, 15], [14, 1]]
+    #items = [[6, 5], [1, -3], [-6, -5], [-4, -10], [-2, -1], [-5, 12], [2, 13], [17, -12], [8, -22], [15, -13],
+    #         [10, -6], [7, 15], [14, 1]]
     testItmes = [[6, 5], [1, -3], [-6, -5], [-4, -10], [-5, 12], [2, 13], [17, -12], [8, -22], [15, -13],
                  [10, -6], [7, 15], [14, 1]]
     tree = Tree()
     tree.data = testItmes
     tree.create()
+    ans1 = tree.knn(-1, -5, 3)
     tree.add(-2, -1)
-    ans = tree.knn(-1, -5, 3)
+    ans2 = tree.knn(-1, -5, 3)
+    tree.remove(-2, -1)
+    ans3 = tree.knn(-1, -5, 3)
